@@ -1,4 +1,4 @@
-package com.jxn.androidserver;
+package com.jxn.androidserver.server;
 
 /**
  * Created by jxn on 2016/11/26 0026.
