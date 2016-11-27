@@ -1,0 +1,72 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!-- saved from url=(0042)http://so.m.jd.com/solocalocalstorage.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=GBK">
+
+<title></title>
+<script type="text/javascript">  
+(function(){  
+	var hasStorage = window.localStorage ? true : false;
+	if(hasStorage){
+		try{
+			window.localStorage.setItem('M_test',1);
+		}catch (e) {
+			hasStorage = false;
+		}
+		try{
+			window.localStorage.getItem('M_test');
+		}catch (e) {
+			hasStorage = false;
+		}
+		try{
+			window.localStorage.removeItem('M_test');
+		}catch (e) {
+			hasStorage = false;
+		}
+	}
+    function handleRequest(event){
+		if(hasStorage){
+	        try{
+	        	var data = JSON.parse(event.data);  
+	            var storage = window.localStorage;
+	            if(data.op === 'W'){ //写操作  
+	                storage.setItem(data.key,data.value);  
+	                event.source.postMessage(event.data, event.origin);  
+	            }else if(data.op === 'D'){ //删除  
+	                storage.removeItem(data.key);  
+	                event.source.postMessage(event.data, event.origin);  
+	            }else if(data.op === 'X'){ //清空  
+	                storage.clear();  
+	                event.source.postMessage(event.data, event.origin);  
+	            }else if(data.op === 'R'){//默认：读操作  
+	                var value = storage.getItem(data.key);
+	                event.source.postMessage(JSON.stringify({id: data.id, key:data.key, value: value}), event.origin);  
+	            }
+	        }catch(e){  
+	            event.source.postMessage(event.data, event.origin);  
+	        }
+		}else{
+			if(data.op === 'W'){ //写操作  
+                event.source.postMessage(event.data, event.origin);  
+            }else if(data.op === 'D'){ //删除  
+                event.source.postMessage(event.data, event.origin);  
+            }else if(data.op === 'X'){ //清空  
+                event.source.postMessage(event.data, event.origin);  
+            }else if(data.op === 'R'){//默认：读操作  
+                var value = null
+                event.source.postMessage(JSON.stringify({id: data.id, key:data.key, value: value}), event.origin);  
+            }
+		}
+    }
+  
+    if(window.addEventListener){  
+        window.addEventListener("message", handleRequest, false);  
+    } else if (window.attachEvent){  
+        window.attachEvent("onmessage", handleRequest);  
+    }  
+})();  
+</script>  
+</head>
+<body>
+
+
+</body></html>

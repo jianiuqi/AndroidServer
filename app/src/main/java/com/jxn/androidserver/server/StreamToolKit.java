@@ -1,5 +1,6 @@
 package com.jxn.androidserver.server;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -21,7 +22,20 @@ public class StreamToolKit {
         }
         if (sb.length() == 0)
             return null;
+        if (sb.length() > 2) {
+            return sb.toString().substring(0, sb.length()-2);
+        }
         return  sb.toString();
     }
 
+    public static byte[] readRawFromStream(InputStream in) throws IOException {
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        byte[] buffer = new byte[10240];
+        int nReaded;
+        while ((nReaded = in.read(buffer)) > 0) {
+            bos.write(buffer, 0, nReaded);
+        }
+        return  bos.toByteArray();
+    }
 }
