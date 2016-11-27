@@ -3,6 +3,7 @@ package com.jxn.androidserver.server;
 import android.util.Log;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -63,7 +64,7 @@ public class SimpleHttpServer {
                 mTreadPool.submit(new Runnable() {
                     @Override
                     public void run() {
-                        Log.d("an-server", "a remote peer accepted" + remotePeer.getRemoteSocketAddress());
+                        System.out.println("a remote peer accepted" + remotePeer.getRemoteSocketAddress());
                         onAcceptRemotePeer(remotePeer);
                     }
                 });
@@ -79,7 +80,19 @@ public class SimpleHttpServer {
      */
     private void onAcceptRemotePeer(Socket remotePeer) {
         try {
-            remotePeer.getOutputStream().write("connected success".getBytes());
+//            remotePeer.getOutputStream().write("connected success".getBytes());
+            HttpContext httpContext = new HttpContext();
+            httpContext.setUnderlySocket(remotePeer);
+            InputStream in = remotePeer.getInputStream();
+            String headerLine = null;
+            while ((headerLine = StreamToolKit.readLine(in)) != null){
+                // 头数据会以两个\r\n结尾
+                if (headerLine.equals("\r\n"))
+                    break;
+                System.out.println("headers is :" + headerLine);
+                String[] pair = headerLine.split(": ");
+                httpContext.addRequestHeader(pair[0], pair[1]);
+            }
         } catch (IOException e) {
             Log.e("an-server", e.toString());
         }
