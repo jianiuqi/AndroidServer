@@ -4,7 +4,9 @@ import android.app.Activity;
 import android.os.Bundle;
 
 import com.jxn.androidserver.R;
+import com.jxn.androidserver.server.ResourceInAssetsHandler;
 import com.jxn.androidserver.server.SimpleHttpServer;
+import com.jxn.androidserver.server.UploadImageHandler;
 import com.jxn.androidserver.server.WebConfiguration;
 
 /**
@@ -23,6 +25,8 @@ public class MainActivity extends Activity {
         webConfig.setPort(8088);
         webConfig.setMaxParallels(50);
         mSimpleServer = new SimpleHttpServer(webConfig);
+        mSimpleServer.registerResourceHandler(new ResourceInAssetsHandler());
+        mSimpleServer.registerResourceHandler(new UploadImageHandler());
         mSimpleServer.startAsync();
     }
 

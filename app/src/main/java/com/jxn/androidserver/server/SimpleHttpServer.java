@@ -7,6 +7,8 @@ import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -17,11 +19,13 @@ public class SimpleHttpServer {
 
     private boolean mIsEnable = false;
     private ServerSocket mSocket;
+    private Set<IUriResourceHandler> mResourceHandlers;
 
     public SimpleHttpServer(WebConfiguration webConfig){
         this.mWebConfig = webConfig;
         // newCached中一个线程结束之后不会立即把这个线程销毁
         this.mTreadPool =  Executors.newCachedThreadPool();
+        this.mResourceHandlers = new HashSet<IUriResourceHandler>();
     }
 
     /**
@@ -74,6 +78,10 @@ public class SimpleHttpServer {
         }
     }
 
+    public  void  registerResourceHandler(IUriResourceHandler handler){
+        mResourceHandlers.add(handler);
+    }
+
     /**
      * 处理连接后的操作
      * @param remotePeer
@@ -85,6 +93,8 @@ public class SimpleHttpServer {
             httpContext.setUnderlySocket(remotePeer);
             InputStream in = remotePeer.getInputStream();
             String headerLine = null;
+            String resourceUri = StreamToolKit.readLine(in).split(" ")[1];
+            System.out.print("resourceUri is :" + resourceUri);
             while ((headerLine = StreamToolKit.readLine(in)) != null){
                 // 头数据会以两个\r\n结尾
                 if (headerLine.equals("\r\n"))
@@ -92,6 +102,12 @@ public class SimpleHttpServer {
                 System.out.println("headers is :" + headerLine);
                 String[] pair = headerLine.split(": ");
                 httpContext.addRequestHeader(pair[0], pair[1]);
+            }
+
+            for (IUriResourceHandler handler : mResourceHandlers) {
+                if (!handler.accept(resourceUri))
+                    continue;
+                handler.handle(resourceUri, httpContext);
             }
         } catch (IOException e) {
             Log.e("an-server", e.toString());
